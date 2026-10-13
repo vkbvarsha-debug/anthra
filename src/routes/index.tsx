@@ -1,24 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
-
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
-export const Route = createFileRoute("/")({
-  component: Index,
-});
-
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
-}
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { useState } from 'react';
+import { Leaf, Heart, RefreshCw, ArrowRight, MessageCircle, Frown, CloudRain, Wind, CircleDashed, BatteryLow, Users, CircleHelp, Smile, BookOpen, Flower2, Sun, ShieldCheck } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import garden from '@/assets/quiet-garden.jpg';
+import { affirmations, moods, gratitudeToEntry, pageHead } from '@/lib/wellness';
+import { useWellness } from '@/components/wellness-provider';
+import { CheckIn } from '@/components/check-in';
+import { GentleActivity } from '@/components/gentle-activity';
+import { toast } from 'sonner';
+export const Route=createFileRoute('/')({head:()=>pageHead('Your personal space', 'ANTHARA — Your feelings. Your space. Your pace. A gentle student wellness space for reflection, check-ins, and human support.'),component:Home});
+const icons=[Frown,CloudRain,Wind,CircleDashed,BatteryLow,Users,CircleHelp,Smile];
+function Home(){const [check,setCheck]=useState(false);const [mood,setMood]=useState('');const [affirm,setAffirm]=useState(0);const [gratitude,setGratitude]=useState(['','','']);const [difficult,setDifficult]=useState(false);const [activity,setActivity]=useState('');const {update}=useWellness();
+function save(){const text=gratitudeToEntry(gratitude,difficult);if(!text){toast('You can leave this empty. There’s no pressure.');return;}update(d=>({...d,entries:[{id:crypto.randomUUID(),date:new Date().toISOString(),title:'A little good today',text,mood:'',tag:'Gratitude'},...d.entries]}));setGratitude(['','','']);setDifficult(false);toast.success('Saved to your journal.');}
+return <><section className="home-hero"><img className="hero-image" src={garden} alt="A quiet moment under a tree beside a winding garden path" width={1536} height={1024}/><div className="hero-fade"/><div className="hero-copy"><div className="eyebrow"><Leaf size={13}/>A little space, just for you</div><h1>Hey, you're here.<br/><em>That's enough for now.</em></h1><p>You don't need to explain everything perfectly.<br/>You don't have to pretend you're okay here. Take your time.</p><div className="hero-actions"><Button size="lg" onClick={()=>{setMood('');setCheck(true);}}><Heart/>Let's check in with ourselves<ArrowRight/></Button><Button asChild variant="outline" size="lg"><Link to="/companion"><MessageCircle/>I just need someone to listen</Link></Button></div><div className="hero-reassurance"><ShieldCheck size={12}/>Whatever you're feeling, you don't have to find the perfect words to begin.</div></div></section><section><div className="section-heading"><div><h2>What's your inner weather today?</h2><p>There's no right answer. Just start with what feels closest.</p></div><span className="subtle">A small check-in. No pressure.</span></div><div className="mood-grid">{moods.map((m,i)=>{const Icon=icons[i];return <Button variant="ghost" className="mood-card" key={m} onClick={()=>{setMood(m);setCheck(true);}}><Icon/><span>{m==="Don't know"?"Don't know what I feel":m}</span></Button>;})}</div></section><div className="home-grid"><section className="wellness-card affirmation"><div className="card-label"><Sun size={16}/>A KIND THOUGHT FOR TODAY</div><blockquote>“{affirmations[affirm]}”</blockquote><div className="affirmation-bottom"><Button variant="ghost" size="sm" onClick={()=>setAffirm((affirm+1)%affirmations.length)}><RefreshCw/>Another affirmation</Button><Heart className="text-muted-foreground" size={20}/></div></section><section className="wellness-card gratitude"><div className="card-label"><Flower2 size={17}/>THE GRATITUDE CORNER · ALWAYS OPTIONAL</div><h2>A little good, if there was any today.</h2><p>Some days, finding something good is difficult. You can skip this,<br className="hidden xl:block"/> or simply notice one small thing.</p>{['Something that made today a little easier…','Someone or something I appreciated…','One small thing I did for myself…'].map((p,i)=><input key={p} aria-label={p} placeholder={p} value={gratitude[i]} onChange={e=>setGratitude(gratitude.map((g,j)=>j===i?e.target.value:g))}/>)}<div className="gratitude-bottom"><label className="subtle flex gap-2 items-center"><input type="checkbox" className="!w-auto" checked={difficult} onChange={e=>setDifficult(e.target.checked)}/>Today was difficult, and that's okay.</label><Button variant="ghost" size="sm" onClick={save} aria-label="Save gratitude to journal"><ArrowRight/></Button></div></section></div><section className="mt-7"><div className="section-heading"><div><h2>A small moment for yourself</h2><p>Nothing to achieve. A few gentle ways to pause.</p></div><span className="subtle">At your own pace</span></div><div className="gentle-grid"><Button variant="ghost" className="gentle-card" onClick={()=>setActivity('A little breathing room')}><span className="icon-tile"><Wind/></span><div><strong>A little breathing room</strong><p>Slow down, one breath at a time.</p></div><ArrowRight className="ml-auto"/></Button><Button variant="ghost" className="gentle-card" onClick={()=>setActivity('Come back to the present')}><span className="icon-tile"><Flower2/></span><div><strong>Come back to the present</strong><p>A gentle five-senses grounding.</p></div><ArrowRight className="ml-auto"/></Button><Button asChild variant="ghost" className="gentle-card"><Link to="/journal"><span className="icon-tile"><BookOpen/></span><div><strong>Let your thoughts out</strong><p>Your journal is here when you're ready.</p></div><ArrowRight className="ml-auto"/></Link></Button></div></section><CheckIn open={check} initialMood={mood} onClose={()=>setCheck(false)}/>{activity&&<GentleActivity activity={activity} onClose={()=>setActivity('')}/>}</>;}
